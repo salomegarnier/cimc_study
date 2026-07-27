@@ -5,8 +5,8 @@ window.STUDY_CONFIG = {
   // Name of the field to prefill in the daily survey.
   participantFieldName: "uniqueid",
 
-  // Public URL of the participant information sheet (PDF or webpage).
-  informationSheetUrl: "https://example.org/participant-information-sheet.pdf",
+  // Participant information-sheet page. The participant ID is added as ?id=...
+  informationSheetBaseUrl: "https://salomegarnier.github.io/cimc_study/",
 
   // Calendar event settings. Use local study time.
   calendar: {
