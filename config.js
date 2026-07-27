@@ -12,5 +12,14 @@ window.STUDY_CONFIG = {
     durationMinutes: 10,
     reminderMinutesBefore: 10
   },
+  monthlyCalendar: {
+    title: "Complete this month's survey",
+    description: "Open your personal monthly survey using the link below.",
+    startDate: "2026-08-01",
+    time: "09:00",
+    durationMinutes: 10,
+    reminderMinutesBefore: 10,
+    count: 12
+  },
   landingPageIdParameter: "id"
 };

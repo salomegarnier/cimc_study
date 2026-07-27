@@ -78,3 +78,13 @@ This template loads QRCode.js from cdnjs. The QR contents are generated locally 
 The calendar file uses an inclusive daily `COUNT` recurrence rather than an `UNTIL` value. The event uses a floating local time, so `09:00` is interpreted as 9:00 a.m. in the participant’s calendar timezone when imported. No fixed timezone such as `Europe/Paris` is embedded.
 
 On iPhone, participants may need to tap **Open in Calendar** after downloading. On some Android phones, the downloaded file opens through the phone's calendar or file manager rather than directly inside the Google Calendar app.
+
+
+## Combined calendar file
+
+The calendar button and QR code now generate one `.ics` file containing two events:
+
+- A daily reminder linked to the personalized daily survey.
+- A monthly reminder linked to the personalized monthly survey.
+
+Edit `monthlyCalendar.startDate` and `monthlyCalendar.count` in `config.js` to control the first monthly reminder and the number of monthly occurrences. The default is 12 monthly reminders beginning on 1 August 2026. Both events use floating local time, so they import at 9:00 in the participant's local timezone.

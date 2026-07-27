@@ -229,8 +229,8 @@
     return new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
   }
 
-  function buildIcs(surveyUrl) {
-    const cal = config.calendar || {};
+  function buildEvent({ eventType, surveyUrl, recurrence, calendarConfig }) {
+    const cal = calendarConfig || {};
     const dateParts = parseDateParts(cal.startDate);
     const timeParts = parseTime(cal.time || "09:00");
     const duration = Number.isFinite(Number(cal.durationMinutes)) ? Number(cal.durationMinutes) : 10;
@@ -242,26 +242,17 @@
     const endParts = addMinutes(startParts, duration);
     const start = formatIcsLocal(startParts.year, startParts.month, startParts.day, startParts.hour, startParts.minute);
     const end = formatIcsLocal(endParts.year, endParts.month, endParts.day, endParts.hour, endParts.minute);
-    const count = inclusiveDayCount(cal.startDate, cal.endDate);
     const uidSafe = participantId.replace(/[^A-Za-z0-9._-]/g, "-");
-    const title = cal.title || "Complete today's survey";
-    const description = `${cal.description || "Open your personal daily survey using the link below."}\n\n${surveyUrl}`;
+    const title = cal.title || (eventType === "monthly" ? "Complete this month's survey" : "Complete today's survey");
+    const description = `${cal.description || "Open your personal survey using the link below."}\n\n${surveyUrl}`;
 
-    // Floating local times intentionally omit TZID. Each phone schedules the
-    // reminder at the displayed local clock time, which imports more reliably
-    // across Apple Calendar, Google Calendar, Outlook, and Samsung Calendar.
     return [
-      "BEGIN:VCALENDAR",
-      "VERSION:2.0",
-      "CALSCALE:GREGORIAN",
-      "METHOD:PUBLISH",
-      "PRODID:-//CIMC Study//Daily Survey Reminder//EN",
       "BEGIN:VEVENT",
-      `UID:${uidSafe}-daily-survey@cimc-study`,
+      `UID:${uidSafe}-${eventType}-survey@cimc-study`,
       `DTSTAMP:${utcStamp()}`,
       `DTSTART:${start}`,
       `DTEND:${end}`,
-      `RRULE:FREQ=DAILY;COUNT=${count}`,
+      `RRULE:${recurrence}`,
       `SUMMARY:${escapeIcs(title)}`,
       `DESCRIPTION:${escapeIcs(description)}`,
       `URL:${escapeIcs(surveyUrl)}`,
@@ -273,18 +264,53 @@
       "ACTION:DISPLAY",
       `DESCRIPTION:${escapeIcs(title)}`,
       "END:VALARM",
-      "END:VEVENT",
+      "END:VEVENT"
+    ];
+  }
+
+  function buildIcs(dailySurveyUrl, monthlySurveyUrl) {
+    const dailyCal = config.calendar || {};
+    const monthlyCal = config.monthlyCalendar || {};
+    const dailyCount = inclusiveDayCount(dailyCal.startDate, dailyCal.endDate);
+    const monthlyCount = Number.isFinite(Number(monthlyCal.count)) && Number(monthlyCal.count) > 0
+      ? Math.floor(Number(monthlyCal.count))
+      : 12;
+
+    const dailyEvent = buildEvent({
+      eventType: "daily",
+      surveyUrl: dailySurveyUrl,
+      recurrence: `FREQ=DAILY;COUNT=${dailyCount}`,
+      calendarConfig: dailyCal
+    });
+
+    const monthlyEvent = buildEvent({
+      eventType: "monthly",
+      surveyUrl: monthlySurveyUrl,
+      recurrence: `FREQ=MONTHLY;COUNT=${monthlyCount}`,
+      calendarConfig: monthlyCal
+    });
+
+    // Floating local times omit TZID, so each participant's calendar imports
+    // both reminders at 9:00 in the phone's local timezone.
+    return [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "CALSCALE:GREGORIAN",
+      "METHOD:PUBLISH",
+      "PRODID:-//CIMC Study//Survey Reminders//EN",
+      ...dailyEvent,
+      ...monthlyEvent,
       "END:VCALENDAR",
       ""
     ].join("\r\n");
   }
 
-  function downloadCalendar(surveyUrl) {
-    const blob = new Blob([buildIcs(surveyUrl)], { type: "text/calendar;charset=utf-8" });
+  function downloadCalendar(dailySurveyUrl, monthlySurveyUrl) {
+    const blob = new Blob([buildIcs(dailySurveyUrl, monthlySurveyUrl)], { type: "text/calendar;charset=utf-8" });
     const downloadUrl = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = downloadUrl;
-    a.download = "daily-survey-reminders.ics";
+    a.download = "study-survey-reminders.ics";
     a.rel = "noopener";
     document.body.appendChild(a);
     a.click();
@@ -321,7 +347,7 @@
     document.getElementById("monthlySurveyLinkText").textContent = monthlySurveyUrl;
     document.getElementById("calendarLinkText").textContent = calendarLandingUrl;
     document.getElementById("infoPanel").hidden = false;
-    document.getElementById("calendarButton").addEventListener("click", () => downloadCalendar(surveyUrl));
+    document.getElementById("calendarButton").addEventListener("click", () => downloadCalendar(surveyUrl, monthlySurveyUrl));
 
     renderQr("surveyQr", surveyUrl);
     renderQr("monthlySurveyQr", monthlySurveyUrl);
@@ -331,7 +357,7 @@
     content.hidden = false;
 
     if (action === "calendar") {
-      window.setTimeout(() => downloadCalendar(surveyUrl), 300);
+      window.setTimeout(() => downloadCalendar(surveyUrl, monthlySurveyUrl), 300);
     }
   } catch (error) {
     showError(error.message || "The page could not be loaded.");
