@@ -17,7 +17,7 @@
   }
 
   function validateConfig() {
-    if (!config || !config.surveyBaseUrl || !config.participantFieldName || !config.informationSheetUrl) {
+    if (!config || !config.surveyBaseUrl || !config.participantFieldName || !config.informationSheetBaseUrl) {
       throw new Error("The landing page configuration is incomplete.");
     }
     if (config.surveyBaseUrl.includes("REPLACE_WITH_FORM_ID")) {
@@ -28,6 +28,12 @@
   function buildSurveyUrl() {
     const url = new URL(config.surveyBaseUrl);
     url.searchParams.set(`d[${config.participantFieldName}]`, participantId);
+    return url.toString();
+  }
+
+  function buildInformationSheetUrl() {
+    const url = new URL(config.informationSheetBaseUrl);
+    url.searchParams.set("id", participantId);
     return url.toString();
   }
 
@@ -51,28 +57,74 @@
     return `${dateString.replaceAll("-", "")}T${timeString.replace(":", "")}00`;
   }
 
-  function endDateTime(dateString, timeString, durationMinutes) {
-    const date = new Date(`${dateString}T${timeString}:00`);
-    date.setMinutes(date.getMinutes() + durationMinutes);
+  function parseLocalDate(dateString, timeString = "00:00") {
+    const [year, month, day] = dateString.split("-").map(Number);
+    const [hour, minute] = timeString.split(":").map(Number);
+    return new Date(year, month - 1, day, hour, minute, 0, 0);
+  }
+
+  function formatLocalDateTime(date) {
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, "0");
     const d = String(date.getDate()).padStart(2, "0");
     const hh = String(date.getHours()).padStart(2, "0");
     const mm = String(date.getMinutes()).padStart(2, "0");
-    return `${y}${m}${d}T${hh}${mm}00`;
+    const ss = String(date.getSeconds()).padStart(2, "0");
+    return `${y}${m}${d}T${hh}${mm}${ss}`;
+  }
+
+  function inclusiveDayCount(startDate, endDate) {
+    const start = parseLocalDate(startDate);
+    const end = parseLocalDate(endDate);
+    const days = Math.floor((end - start) / 86400000) + 1;
+    if (!Number.isFinite(days) || days < 1) {
+      throw new Error("The calendar end date must be on or after the start date.");
+    }
+    return days;
   }
 
   function utcStamp() {
     return new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
   }
 
+  function timezoneComponent(timezone) {
+    // This definition covers Europe/Paris, including daylight-saving transitions.
+    // Other timezones are still accepted by many calendar apps through TZID, but
+    // can be added here if stricter Outlook compatibility is required.
+    if (timezone !== "Europe/Paris") return [];
+    return [
+      "BEGIN:VTIMEZONE",
+      "TZID:Europe/Paris",
+      "X-LIC-LOCATION:Europe/Paris",
+      "BEGIN:DAYLIGHT",
+      "TZOFFSETFROM:+0100",
+      "TZOFFSETTO:+0200",
+      "TZNAME:CEST",
+      "DTSTART:19700329T020000",
+      "RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU",
+      "END:DAYLIGHT",
+      "BEGIN:STANDARD",
+      "TZOFFSETFROM:+0200",
+      "TZOFFSETTO:+0100",
+      "TZNAME:CET",
+      "DTSTART:19701025T030000",
+      "RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU",
+      "END:STANDARD",
+      "END:VTIMEZONE"
+    ];
+  }
+
   function buildIcs(surveyUrl) {
     const cal = config.calendar;
+    const startDate = parseLocalDate(cal.startDate, cal.time);
+    const endDate = new Date(startDate.getTime());
+    endDate.setMinutes(endDate.getMinutes() + Number(cal.durationMinutes));
     const start = compactDate(cal.startDate, cal.time);
-    const end = endDateTime(cal.startDate, cal.time, cal.durationMinutes);
-    const until = `${cal.endDate.replaceAll("-", "")}T235959`;
+    const end = formatLocalDateTime(endDate);
+    const count = inclusiveDayCount(cal.startDate, cal.endDate);
     const uidSafe = participantId.replace(/[^A-Za-z0-9._-]/g, "-");
     const description = `${cal.description}\n\n${surveyUrl}`;
+    const timezone = cal.timezone || "Europe/Paris";
 
     return [
       "BEGIN:VCALENDAR",
@@ -80,15 +132,21 @@
       "CALSCALE:GREGORIAN",
       "METHOD:PUBLISH",
       "PRODID:-//Study Team//Daily Survey Reminder//EN",
+      `X-WR-CALNAME:${escapeIcs(cal.title)}`,
+      `X-WR-TIMEZONE:${escapeIcs(timezone)}`,
+      ...timezoneComponent(timezone),
       "BEGIN:VEVENT",
-      `UID:${uidSafe}-daily-survey@study`,
+      `UID:${uidSafe}-daily-survey@study.example.org`,
       `DTSTAMP:${utcStamp()}`,
-      `DTSTART;TZID=${cal.timezone}:${start}`,
-      `DTEND;TZID=${cal.timezone}:${end}`,
-      `RRULE:FREQ=DAILY;UNTIL=${until}`,
+      `DTSTART;TZID=${timezone}:${start}`,
+      `DTEND;TZID=${timezone}:${end}`,
+      `RRULE:FREQ=DAILY;COUNT=${count}`,
       `SUMMARY:${escapeIcs(cal.title)}`,
       `DESCRIPTION:${escapeIcs(description)}`,
       `URL:${escapeIcs(surveyUrl)}`,
+      "STATUS:CONFIRMED",
+      "TRANSP:TRANSPARENT",
+      "SEQUENCE:0",
       "BEGIN:VALARM",
       `TRIGGER:-PT${Number(cal.reminderMinutesBefore)}M`,
       "ACTION:DISPLAY",
@@ -106,10 +164,11 @@
     const a = document.createElement("a");
     a.href = downloadUrl;
     a.download = "daily-survey-reminders.ics";
+    a.rel = "noopener";
     document.body.appendChild(a);
     a.click();
     a.remove();
-    setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+    setTimeout(() => URL.revokeObjectURL(downloadUrl), 10000);
   }
 
   function renderQr(elementId, text) {
@@ -132,7 +191,7 @@
 
     const surveyUrl = buildSurveyUrl();
     const calendarLandingUrl = buildCalendarLandingUrl();
-    const infoUrl = config.informationSheetUrl;
+    const infoUrl = buildInformationSheetUrl();
 
     document.getElementById("surveyButton").href = surveyUrl;
     document.getElementById("surveyLinkText").textContent = surveyUrl;

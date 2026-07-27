@@ -4,8 +4,12 @@ A static GitHub Pages site that reads a participant ID from the URL and creates:
 
 - a personalized Kobo daily-survey link;
 - a downloadable recurring `.ics` calendar reminder containing that link;
-- a link to the participant information sheet;
+- a personalized link to the participant information sheet;
 - QR codes for all three items.
+
+The information-sheet link is generated as:
+
+`https://salomegarnier.github.io/cimc_study/?id=PARTICIPANT_ID`
 
 The participant ID is processed in the browser. The site does not send it to a QR-code generation service.
 
@@ -15,7 +19,7 @@ Edit `config.js`:
 
 - Replace `surveyBaseUrl` with the deployed Kobo web-form URL.
 - Set `participantFieldName` to the name of the ID field in the daily survey.
-- Replace `informationSheetUrl` with the public PDF or webpage URL.
+- Set `informationSheetBaseUrl` to the participant information-sheet page. The landing page automatically appends the participant ID as `?id=...`.
 - Set the calendar dates, time, duration, reminder time, and timezone.
 
 The ID field in the daily survey can be hidden and is prefilled using Kobo's `d[field_name]` URL parameter.
@@ -68,3 +72,9 @@ A QR code cannot contain the temporary browser-generated `.ics` file itself. The
 ## QR library
 
 This template loads QRCode.js from cdnjs. The QR contents are generated locally in the browser; the participant URLs are not sent to the CDN. To remove the external dependency, download `qrcode.min.js`, place it beside `app.js`, and change the script source in `index.html` to `qrcode.min.js`.
+
+## Calendar compatibility note
+
+The calendar file uses an inclusive daily `COUNT` recurrence rather than an `UNTIL` value. This avoids a common import failure caused by mixing a local timezone start with a non-UTC `UNTIL` date. A `VTIMEZONE` definition is included for `Europe/Paris` for stronger Apple Calendar and Outlook compatibility.
+
+On iPhone, participants may need to tap **Open in Calendar** after downloading. On some Android phones, the downloaded file opens through the phone's calendar or file manager rather than directly inside the Google Calendar app.
