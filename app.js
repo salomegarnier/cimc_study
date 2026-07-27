@@ -10,6 +10,114 @@
   const errorBox = document.getElementById("errorBox");
   const content = document.getElementById("content");
 
+
+  const browserOptions = {
+    ios: [
+      { value: "safari-ios", label: "Safari" },
+      { value: "chrome-ios", label: "Chrome" },
+      { value: "firefox-ios", label: "Firefox" }
+    ],
+    android: [
+      { value: "chrome-android", label: "Chrome" },
+      { value: "edge-android", label: "Edge" },
+      { value: "firefox-android", label: "Firefox" },
+      { value: "samsung-android", label: "Samsung Internet" },
+      { value: "opera-android", label: "Opera" }
+    ]
+  };
+
+  const homeScreenInstructions = {
+    "safari-ios": [
+      "Tap the three dots in the bottom-right corner to open the browser menu.",
+      "Tap the Share icon.",
+      "Tap Add to Home Screen."
+    ],
+    "chrome-ios": [
+      "Tap the Share icon in the top corner of the screen.",
+      "Tap View more.",
+      "Tap Add to Home Screen."
+    ],
+    "firefox-ios": [
+      "Tap the Share icon in the bottom corner of the screen.",
+      "Tap View more.",
+      "Tap Add to Home Screen."
+    ],
+    "chrome-android": [
+      "Tap the three vertical dots in the top-right corner to open the browser menu.",
+      "Tap Install and create shortcut."
+    ],
+    "edge-android": [
+      "Tap the three stacked lines in the top-right corner to open the browser menu.",
+      "Tap Add to phone."
+    ],
+    "firefox-android": [
+      "Tap the three vertical dots in the top-right corner to open the browser menu.",
+      "Tap More.",
+      "Tap Add to Home Screen."
+    ],
+    "samsung-android": [
+      "Tap the three vertical dots in the top-right corner to open the browser menu.",
+      "Tap Add page to.",
+      "Select Home screen."
+    ],
+    "opera-android": [
+      "Tap the three vertical dots in the top-right corner to open the browser menu.",
+      "Tap Add to… .",
+      "Select Home screen."
+    ]
+  };
+
+  function setupHomeScreenInstructions() {
+    const deviceSelect = document.getElementById("deviceSelect");
+    const browserSelect = document.getElementById("browserSelect");
+    const instructionsBox = document.getElementById("homeScreenInstructions");
+
+    function hideInstructions() {
+      instructionsBox.hidden = true;
+      instructionsBox.replaceChildren();
+    }
+
+    function updateBrowserOptions() {
+      const device = deviceSelect.value;
+      browserSelect.replaceChildren();
+      hideInstructions();
+
+      const placeholder = document.createElement("option");
+      placeholder.value = "";
+      placeholder.textContent = device ? "Select a browser" : "Select a device first";
+      browserSelect.appendChild(placeholder);
+
+      for (const option of browserOptions[device] || []) {
+        const element = document.createElement("option");
+        element.value = option.value;
+        element.textContent = option.label;
+        browserSelect.appendChild(element);
+      }
+
+      browserSelect.disabled = !device;
+    }
+
+    function showInstructions() {
+      const steps = homeScreenInstructions[browserSelect.value];
+      hideInstructions();
+      if (!steps) return;
+
+      const intro = document.createElement("p");
+      intro.textContent = "To save this form for easy access:";
+      const list = document.createElement("ol");
+      for (const step of steps) {
+        const item = document.createElement("li");
+        item.textContent = step;
+        list.appendChild(item);
+      }
+      instructionsBox.append(intro, list);
+      instructionsBox.hidden = false;
+    }
+
+    deviceSelect.addEventListener("change", updateBrowserOptions);
+    browserSelect.addEventListener("change", showInstructions);
+  }
+
   function showError(message) {
     errorBox.textContent = message;
     errorBox.hidden = false;
@@ -207,6 +315,7 @@
     renderQr("surveyQr", surveyUrl);
     renderQr("calendarQr", calendarLandingUrl);
     renderQr("infoQr", infoUrl, 104);
+    setupHomeScreenInstructions();
     content.hidden = false;
 
     if (action === "calendar") {
