@@ -125,7 +125,7 @@
   }
 
   function validateConfig() {
-    if (!config || !config.surveyBaseUrl || !config.participantFieldName || !config.informationSheetBaseUrl) {
+    if (!config || !config.surveyBaseUrl || !config.monthlySurveyBaseUrl || !config.participantFieldName || !config.informationSheetBaseUrl) {
       throw new Error("The landing page configuration is incomplete.");
     }
     if (config.surveyBaseUrl.includes("REPLACE_WITH_FORM_ID")) {
@@ -133,10 +133,18 @@
     }
   }
 
-  function buildSurveyUrl() {
-    const url = new URL(config.surveyBaseUrl);
+  function buildPersonalizedSurveyUrl(baseUrl) {
+    const url = new URL(baseUrl);
     url.searchParams.set(`d[${config.participantFieldName}]`, participantId);
     return url.toString();
+  }
+
+  function buildSurveyUrl() {
+    return buildPersonalizedSurveyUrl(config.surveyBaseUrl);
+  }
+
+  function buildMonthlySurveyUrl() {
+    return buildPersonalizedSurveyUrl(config.monthlySurveyBaseUrl);
   }
 
   function buildInformationSheetUrl() {
@@ -303,16 +311,20 @@
     }
 
     const surveyUrl = buildSurveyUrl();
+    const monthlySurveyUrl = buildMonthlySurveyUrl();
     const calendarLandingUrl = buildCalendarLandingUrl();
     const infoUrl = buildInformationSheetUrl();
 
     document.getElementById("surveyButton").href = surveyUrl;
     document.getElementById("surveyLinkText").textContent = surveyUrl;
+    document.getElementById("monthlySurveyButton").href = monthlySurveyUrl;
+    document.getElementById("monthlySurveyLinkText").textContent = monthlySurveyUrl;
     document.getElementById("calendarLinkText").textContent = calendarLandingUrl;
     document.getElementById("infoPanel").hidden = false;
     document.getElementById("calendarButton").addEventListener("click", () => downloadCalendar(surveyUrl));
 
     renderQr("surveyQr", surveyUrl);
+    renderQr("monthlySurveyQr", monthlySurveyUrl);
     renderQr("calendarQr", calendarLandingUrl);
     renderQr("infoQr", infoUrl, 104);
     setupHomeScreenInstructions();

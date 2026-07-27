@@ -1,5 +1,6 @@
 window.STUDY_CONFIG = {
-  surveyBaseUrl: "https://ee.kobotoolbox.org/x/qhhvo3WA",
+  surveyBaseUrl: "https://ee.kobotoolbox.org/single/qhhvo3WA",
+  monthlySurveyBaseUrl: "https://ee.kobotoolbox.org/single/5ZGpgO3L",
   participantFieldName: "uniqueid",
   informationSheetBaseUrl: "https://salomegarnier.github.io/cimc_study/",
   calendar: {
