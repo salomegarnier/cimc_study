@@ -5,21 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
   <title>Study links</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=7">
 </head>
 <body>
   <main class="container">
-    <header class="hero-row">
-      <div class="hero">
-        <p class="eyebrow">Study resources</p>
+    <header class="hero">
+      <p class="eyebrow">Study resources</p>
+      <div class="title-row">
         <h1>Your study links</h1>
-        <p id="intro">Use the buttons below on this device, or scan a QR code to open an item on another device.</p>
+        <aside id="infoPanel" class="info-panel" hidden aria-label="QR code to open this page on another phone">
+          <div id="infoQr" class="info-qr" aria-label="QR code to open this page on another phone"></div>
+          <p>Scan to open on your phone</p>
+        </aside>
       </div>
-
-      <aside id="infoPanel" class="info-panel" hidden aria-label="QR code to open this page on another phone">
-        <div id="infoQr" class="info-qr" aria-label="QR code to open this page on another phone"></div>
-        <p>Scan to open on your phone</p>
-      </aside>
+      <p id="intro">Use the buttons below on this device, or scan a QR code to open an item on another device.</p>
     </header>
 
     <section id="errorBox" class="notice error" hidden aria-live="polite"></section>
@@ -65,7 +64,7 @@
   </main>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="config.js?v=6"></script>
-  <script src="app.js?v=6"></script>
+  <script src="config.js?v=7"></script>
+  <script src="app.js?v=7"></script>
 </body>
 </html>
