@@ -67,7 +67,7 @@
     ]
   };
 
-  function setupHomeScreenInstructions() {
+  function setupHomeScreenInstructions(dailySurveyUrl, monthlySurveyUrl) {
     const deviceSelect = document.getElementById("deviceSelect");
     const browserSelect = document.getElementById("browserSelect");
     const instructionsBox = document.getElementById("homeScreenInstructions");
@@ -98,18 +98,41 @@
     }
 
     function showInstructions() {
-      const steps = homeScreenInstructions[browserSelect.value];
+      const browserSteps = homeScreenInstructions[browserSelect.value];
       hideInstructions();
-      if (!steps) return;
+      if (!browserSteps) return;
 
       const intro = document.createElement("p");
-      intro.textContent = "To save this form for easy access:";
+      intro.textContent = "To save the questionnaires to your phone for easy access:";
+
       const list = document.createElement("ol");
-      for (const step of steps) {
+
+      const dailyItem = document.createElement("li");
+      dailyItem.append("Open the daily form in your browser. ");
+      const dailyLink = document.createElement("a");
+      dailyLink.href = dailySurveyUrl;
+      dailyLink.textContent = "Add this";
+      dailyLink.target = "_blank";
+      dailyLink.rel = "noopener";
+      dailyItem.appendChild(dailyLink);
+      list.appendChild(dailyItem);
+
+      for (const step of browserSteps) {
         const item = document.createElement("li");
         item.textContent = step;
         list.appendChild(item);
       }
+
+      const monthlyItem = document.createElement("li");
+      monthlyItem.append("Repeat these steps with the ");
+      const monthlyLink = document.createElement("a");
+      monthlyLink.href = monthlySurveyUrl;
+      monthlyLink.textContent = "monthly form";
+      monthlyLink.target = "_blank";
+      monthlyLink.rel = "noopener";
+      monthlyItem.append(monthlyLink, ".");
+      list.appendChild(monthlyItem);
+
       instructionsBox.append(intro, list);
       instructionsBox.hidden = false;
     }
@@ -350,7 +373,7 @@
     renderQr("monthlySurveyQr", monthlySurveyUrl);
     renderQr("calendarQr", calendarLandingUrl);
     renderQr("infoQr", infoUrl, 104);
-    setupHomeScreenInstructions();
+    setupHomeScreenInstructions(surveyUrl, monthlySurveyUrl);
     content.hidden = false;
 
     if (action === "calendar") {
