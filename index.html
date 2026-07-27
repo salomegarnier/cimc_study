@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Study links</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="container">
+    <header class="hero">
+      <p class="eyebrow">Study resources</p>
+      <h1>Your study links</h1>
+      <p id="intro">Use the buttons below on this device, or scan a QR code to open an item on another device.</p>
+    </header>
+
+    <section id="errorBox" class="notice error" hidden aria-live="polite"></section>
+
+    <section id="content" class="cards" hidden>
+      <article class="card">
+        <div class="card-copy">
+          <h2>Daily survey</h2>
+          <p>Open the survey using your personal study link.</p>
+          <a id="surveyButton" class="button" href="#">Open daily survey</a>
+          <details>
+            <summary>Show link</summary>
+            <p id="surveyLinkText" class="url"></p>
+          </details>
+        </div>
+        <div>
+          <div id="surveyQr" class="qr" aria-label="QR code for the daily survey"></div>
+          <p class="qr-caption">Scan to open on another device</p>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-copy">
+          <h2>Calendar reminders</h2>
+          <p>Download recurring reminders containing your personal survey link.</p>
+          <button id="calendarButton" class="button" type="button">Download calendar reminders</button>
+          <details>
+            <summary>Show link</summary>
+            <p id="calendarLinkText" class="url"></p>
+          </details>
+        </div>
+        <div>
+          <div id="calendarQr" class="qr" aria-label="QR code for calendar reminders"></div>
+          <p class="qr-caption">Scan to download on another device</p>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-copy">
+          <h2>Participant information sheet</h2>
+          <p>Open or download the information sheet for this study.</p>
+          <a id="infoButton" class="button" href="#" target="_blank" rel="noopener">Open information sheet</a>
+          <details>
+            <summary>Show link</summary>
+            <p id="infoLinkText" class="url"></p>
+          </details>
+        </div>
+        <div>
+          <div id="infoQr" class="qr" aria-label="QR code for the participant information sheet"></div>
+          <p class="qr-caption">Scan to open on another device</p>
+        </div>
+      </article>
+    </section>
+
+    <footer>
+      <p>Keep your personal study link private. Contact the study team if you need help.</p>
+    </footer>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
