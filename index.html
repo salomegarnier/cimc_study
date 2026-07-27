@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
   <title>Study links</title>
-  <link rel="stylesheet" href="styles.css?v=11">
+  <link rel="stylesheet" href="styles.css?v=12">
 </head>
 <body>
   <main class="container">
@@ -31,35 +31,6 @@
           <h2>Daily survey</h2>
           <p>Open the survey using your personal study link.</p>
           <a id="surveyButton" class="button" href="#">Open daily survey</a>
-          <details>
-            <summary>Show link</summary>
-            <p id="surveyLinkText" class="url"></p>
-          </details>
-
-          <details class="home-screen-module">
-            <summary>Add the survey to your home screen</summary>
-            <div class="home-screen-content">
-              <div class="instruction-fields">
-                <label>
-                  <span>1. Which device are you using?</span>
-                  <select id="deviceSelect">
-                    <option value="">Select a device</option>
-                    <option value="ios">iPhone or iPad</option>
-                    <option value="android">Android phone or tablet</option>
-                  </select>
-                </label>
-
-                <label>
-                  <span>2. Which browser are you using?</span>
-                  <select id="browserSelect" disabled>
-                    <option value="">Select a device first</option>
-                  </select>
-                </label>
-              </div>
-
-              <div id="homeScreenInstructions" class="instruction-box" hidden aria-live="polite"></div>
-            </div>
-          </details>
         </div>
         <div>
           <div id="surveyQr" class="qr" aria-label="QR code for the daily survey"></div>
@@ -73,10 +44,6 @@
           <h2>Monthly survey</h2>
           <p>Open the monthly survey using your personal study link.</p>
           <a id="monthlySurveyButton" class="button" href="#">Open monthly survey</a>
-          <details>
-            <summary>Show link</summary>
-            <p id="monthlySurveyLinkText" class="url"></p>
-          </details>
         </div>
         <div>
           <div id="monthlySurveyQr" class="qr" aria-label="QR code for the monthly survey"></div>
@@ -84,15 +51,39 @@
         </div>
       </article>
 
+      <article class="instructions-card">
+        <details class="home-screen-module">
+          <summary>Add the surveys to your home screen</summary>
+          <div class="home-screen-content">
+            <p>Use these instructions to save either the daily or monthly survey link for easy access.</p>
+            <div class="instruction-fields">
+              <label>
+                <span>1. Which device are you using?</span>
+                <select id="deviceSelect">
+                  <option value="">Select a device</option>
+                  <option value="ios">iPhone or iPad</option>
+                  <option value="android">Android phone or tablet</option>
+                </select>
+              </label>
+
+              <label>
+                <span>2. Which browser are you using?</span>
+                <select id="browserSelect" disabled>
+                  <option value="">Select a device first</option>
+                </select>
+              </label>
+            </div>
+
+            <div id="homeScreenInstructions" class="instruction-box" hidden aria-live="polite"></div>
+          </div>
+        </details>
+      </article>
+
       <article class="card">
         <div class="card-copy">
           <h2>Calendar reminders</h2>
           <p>Download one calendar file containing both your daily and monthly survey reminders.</p>
           <button id="calendarButton" class="button" type="button">Download calendar reminders</button>
-          <details>
-            <summary>Show link</summary>
-            <p id="calendarLinkText" class="url"></p>
-          </details>
         </div>
         <div>
           <div id="calendarQr" class="qr" aria-label="QR code for calendar reminders"></div>
@@ -108,7 +99,7 @@
   </main>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="config.js?v=11"></script>
-  <script src="app.js?v=11"></script>
+  <script src="config.js?v=12"></script>
+  <script src="app.js?v=12"></script>
 </body>
 </html>

@@ -342,10 +342,7 @@
     const infoUrl = buildInformationSheetUrl();
 
     document.getElementById("surveyButton").href = surveyUrl;
-    document.getElementById("surveyLinkText").textContent = surveyUrl;
     document.getElementById("monthlySurveyButton").href = monthlySurveyUrl;
-    document.getElementById("monthlySurveyLinkText").textContent = monthlySurveyUrl;
-    document.getElementById("calendarLinkText").textContent = calendarLandingUrl;
     document.getElementById("infoPanel").hidden = false;
     document.getElementById("calendarButton").addEventListener("click", () => downloadCalendar(surveyUrl, monthlySurveyUrl));
 
