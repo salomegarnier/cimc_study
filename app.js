@@ -201,7 +201,6 @@
     document.getElementById("surveyButton").href = surveyUrl;
     document.getElementById("surveyLinkText").textContent = surveyUrl;
     document.getElementById("calendarLinkText").textContent = calendarLandingUrl;
-    document.getElementById("infoPanelLink").href = infoUrl;
     document.getElementById("infoPanel").hidden = false;
     document.getElementById("calendarButton").addEventListener("click", () => downloadCalendar(surveyUrl));
 
