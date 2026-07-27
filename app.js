@@ -53,29 +53,55 @@
       .replace(/;/g, "\\;");
   }
 
-  function compactDate(dateString, timeString) {
-    return `${dateString.replaceAll("-", "")}T${timeString.replace(":", "")}00`;
+  function parseTime(timeString) {
+    const match = String(timeString || "").trim().match(/^(\d{1,2}):(\d{2})$/);
+    if (!match) {
+      throw new Error("Calendar time must use H:MM or HH:MM format, for example 9:00 or 09:00.");
+    }
+    const hour = Number(match[1]);
+    const minute = Number(match[2]);
+    if (hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+      throw new Error("The calendar time is invalid.");
+    }
+    return { hour, minute };
   }
 
-  function parseLocalDate(dateString, timeString = "00:00") {
-    const [year, month, day] = dateString.split("-").map(Number);
-    const [hour, minute] = timeString.split(":").map(Number);
-    return new Date(year, month - 1, day, hour, minute, 0, 0);
+  function parseDateParts(dateString) {
+    const match = String(dateString || "").trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!match) {
+      throw new Error("Calendar dates must use YYYY-MM-DD format.");
+    }
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    const date = new Date(year, month - 1, day);
+    if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
+      throw new Error("A calendar date is invalid.");
+    }
+    return { year, month, day };
   }
 
-  function formatLocalDateTime(date) {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, "0");
-    const d = String(date.getDate()).padStart(2, "0");
-    const hh = String(date.getHours()).padStart(2, "0");
-    const mm = String(date.getMinutes()).padStart(2, "0");
-    const ss = String(date.getSeconds()).padStart(2, "0");
-    return `${y}${m}${d}T${hh}${mm}${ss}`;
+  function formatIcsLocal(year, month, day, hour, minute, second = 0) {
+    return `${String(year).padStart(4, "0")}${String(month).padStart(2, "0")}${String(day).padStart(2, "0")}T${String(hour).padStart(2, "0")}${String(minute).padStart(2, "0")}${String(second).padStart(2, "0")}`;
+  }
+
+  function addMinutes(parts, minutesToAdd) {
+    const date = new Date(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, 0, 0);
+    date.setMinutes(date.getMinutes() + minutesToAdd);
+    return {
+      year: date.getFullYear(),
+      month: date.getMonth() + 1,
+      day: date.getDate(),
+      hour: date.getHours(),
+      minute: date.getMinutes()
+    };
   }
 
   function inclusiveDayCount(startDate, endDate) {
-    const start = parseLocalDate(startDate);
-    const end = parseLocalDate(endDate);
+    const startParts = parseDateParts(startDate);
+    const endParts = parseDateParts(endDate);
+    const start = Date.UTC(startParts.year, startParts.month - 1, startParts.day);
+    const end = Date.UTC(endParts.year, endParts.month - 1, endParts.day);
     const days = Math.floor((end - start) / 86400000) + 1;
     if (!Number.isFinite(days) || days < 1) {
       throw new Error("The calendar end date must be on or after the start date.");
@@ -87,70 +113,49 @@
     return new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
   }
 
-  function timezoneComponent(timezone) {
-    // This definition covers Europe/Paris, including daylight-saving transitions.
-    // Other timezones are still accepted by many calendar apps through TZID, but
-    // can be added here if stricter Outlook compatibility is required.
-    if (timezone !== "Europe/Paris") return [];
-    return [
-      "BEGIN:VTIMEZONE",
-      "TZID:Europe/Paris",
-      "X-LIC-LOCATION:Europe/Paris",
-      "BEGIN:DAYLIGHT",
-      "TZOFFSETFROM:+0100",
-      "TZOFFSETTO:+0200",
-      "TZNAME:CEST",
-      "DTSTART:19700329T020000",
-      "RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU",
-      "END:DAYLIGHT",
-      "BEGIN:STANDARD",
-      "TZOFFSETFROM:+0200",
-      "TZOFFSETTO:+0100",
-      "TZNAME:CET",
-      "DTSTART:19701025T030000",
-      "RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU",
-      "END:STANDARD",
-      "END:VTIMEZONE"
-    ];
-  }
-
   function buildIcs(surveyUrl) {
-    const cal = config.calendar;
-    const startDate = parseLocalDate(cal.startDate, cal.time);
-    const endDate = new Date(startDate.getTime());
-    endDate.setMinutes(endDate.getMinutes() + Number(cal.durationMinutes));
-    const start = compactDate(cal.startDate, cal.time);
-    const end = formatLocalDateTime(endDate);
+    const cal = config.calendar || {};
+    const dateParts = parseDateParts(cal.startDate);
+    const timeParts = parseTime(cal.time || "09:00");
+    const duration = Number.isFinite(Number(cal.durationMinutes)) ? Number(cal.durationMinutes) : 10;
+    const reminder = Number.isFinite(Number(cal.reminderMinutesBefore)) ? Number(cal.reminderMinutesBefore) : 10;
+    if (duration <= 0) throw new Error("Calendar duration must be greater than zero.");
+    if (reminder < 0) throw new Error("Reminder minutes cannot be negative.");
+
+    const startParts = { ...dateParts, ...timeParts };
+    const endParts = addMinutes(startParts, duration);
+    const start = formatIcsLocal(startParts.year, startParts.month, startParts.day, startParts.hour, startParts.minute);
+    const end = formatIcsLocal(endParts.year, endParts.month, endParts.day, endParts.hour, endParts.minute);
     const count = inclusiveDayCount(cal.startDate, cal.endDate);
     const uidSafe = participantId.replace(/[^A-Za-z0-9._-]/g, "-");
-    const description = `${cal.description}\n\n${surveyUrl}`;
-    const timezone = cal.timezone || "Europe/Paris";
+    const title = cal.title || "Complete today's survey";
+    const description = `${cal.description || "Open your personal daily survey using the link below."}\n\n${surveyUrl}`;
 
+    // Floating local times intentionally omit TZID. Each phone schedules the
+    // reminder at the displayed local clock time, which imports more reliably
+    // across Apple Calendar, Google Calendar, Outlook, and Samsung Calendar.
     return [
       "BEGIN:VCALENDAR",
       "VERSION:2.0",
       "CALSCALE:GREGORIAN",
       "METHOD:PUBLISH",
-      "PRODID:-//Study Team//Daily Survey Reminder//EN",
-      `X-WR-CALNAME:${escapeIcs(cal.title)}`,
-      `X-WR-TIMEZONE:${escapeIcs(timezone)}`,
-      ...timezoneComponent(timezone),
+      "PRODID:-//CIMC Study//Daily Survey Reminder//EN",
       "BEGIN:VEVENT",
-      `UID:${uidSafe}-daily-survey@study.example.org`,
+      `UID:${uidSafe}-daily-survey@cimc-study`,
       `DTSTAMP:${utcStamp()}`,
-      `DTSTART;TZID=${timezone}:${start}`,
-      `DTEND;TZID=${timezone}:${end}`,
+      `DTSTART:${start}`,
+      `DTEND:${end}`,
       `RRULE:FREQ=DAILY;COUNT=${count}`,
-      `SUMMARY:${escapeIcs(cal.title)}`,
+      `SUMMARY:${escapeIcs(title)}`,
       `DESCRIPTION:${escapeIcs(description)}`,
       `URL:${escapeIcs(surveyUrl)}`,
       "STATUS:CONFIRMED",
       "TRANSP:TRANSPARENT",
       "SEQUENCE:0",
       "BEGIN:VALARM",
-      `TRIGGER:-PT${Number(cal.reminderMinutesBefore)}M`,
+      `TRIGGER:-PT${reminder}M`,
       "ACTION:DISPLAY",
-      `DESCRIPTION:${escapeIcs(cal.title)}`,
+      `DESCRIPTION:${escapeIcs(title)}`,
       "END:VALARM",
       "END:VEVENT",
       "END:VCALENDAR",
@@ -171,13 +176,13 @@
     setTimeout(() => URL.revokeObjectURL(downloadUrl), 10000);
   }
 
-  function renderQr(elementId, text) {
+  function renderQr(elementId, text, size = 184) {
     const node = document.getElementById(elementId);
     node.innerHTML = "";
     new QRCode(node, {
       text,
-      width: 184,
-      height: 184,
+      width: size,
+      height: size,
       correctLevel: QRCode.CorrectLevel.M
     });
   }
@@ -196,13 +201,13 @@
     document.getElementById("surveyButton").href = surveyUrl;
     document.getElementById("surveyLinkText").textContent = surveyUrl;
     document.getElementById("calendarLinkText").textContent = calendarLandingUrl;
-    document.getElementById("infoButton").href = infoUrl;
-    document.getElementById("infoLinkText").textContent = infoUrl;
+    document.getElementById("infoPanelLink").href = infoUrl;
+    document.getElementById("infoPanel").hidden = false;
     document.getElementById("calendarButton").addEventListener("click", () => downloadCalendar(surveyUrl));
 
     renderQr("surveyQr", surveyUrl);
     renderQr("calendarQr", calendarLandingUrl);
-    renderQr("infoQr", infoUrl);
+    renderQr("infoQr", infoUrl, 104);
     content.hidden = false;
 
     if (action === "calendar") {

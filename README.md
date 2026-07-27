@@ -20,7 +20,7 @@ Edit `config.js`:
 - Replace `surveyBaseUrl` with the deployed Kobo web-form URL.
 - Set `participantFieldName` to the name of the ID field in the daily survey.
 - Set `informationSheetBaseUrl` to the participant information-sheet page. The landing page automatically appends the participant ID as `?id=...`.
-- Set the calendar dates, time, duration, reminder time, and timezone.
+- Set the calendar dates, time, duration, and reminder time.
 
 The ID field in the daily survey can be hidden and is prefilled using Kobo's `d[field_name]` URL parameter.
 
@@ -75,6 +75,6 @@ This template loads QRCode.js from cdnjs. The QR contents are generated locally 
 
 ## Calendar compatibility note
 
-The calendar file uses an inclusive daily `COUNT` recurrence rather than an `UNTIL` value. This avoids a common import failure caused by mixing a local timezone start with a non-UTC `UNTIL` date. A `VTIMEZONE` definition is included for `Europe/Paris` for stronger Apple Calendar and Outlook compatibility.
+The calendar file uses an inclusive daily `COUNT` recurrence rather than an `UNTIL` value. The event uses a floating local time, so `09:00` is interpreted as 9:00 a.m. in the participant’s calendar timezone when imported. No fixed timezone such as `Europe/Paris` is embedded.
 
 On iPhone, participants may need to tap **Open in Calendar** after downloading. On some Android phones, the downloaded file opens through the phone's calendar or file manager rather than directly inside the Google Calendar app.

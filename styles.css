@@ -27,9 +27,18 @@ summary { cursor: pointer; font-weight: 600; }
 .notice { padding: 16px; border-radius: 10px; }
 .error { background: #fef3f2; border: 1px solid #fecdca; color: #b42318; }
 footer { margin-top: 28px; color: #667085; font-size: .9rem; }
+.info-panel { position: fixed; top: 16px; right: 16px; z-index: 10; width: 132px; padding: 10px; background: rgba(255, 255, 255, .97); border: 1px solid #d0d5dd; border-radius: 12px; box-shadow: 0 5px 20px rgba(16, 24, 40, .12); text-align: center; }
+.info-panel[hidden] { display: none; }
+.info-panel a { display: block; color: #1d2939; font-size: .78rem; font-weight: 700; line-height: 1.25; text-decoration: none; }
+.info-panel p { margin: 6px 0 0; color: #667085; font-size: .68rem; line-height: 1.2; }
+.info-qr { width: 112px; min-height: 112px; margin: 0 auto 6px; padding: 4px; display: grid; place-items: center; background: white; border: 1px solid #e4e7ec; border-radius: 7px; }
+.info-qr img, .info-qr canvas { max-width: 100%; height: auto !important; }
+
 
 @media (max-width: 680px) {
-  .container { width: min(100% - 24px, 680px); padding-top: 28px; }
+  .info-panel { position: static; width: 124px; margin: 12px 12px 0 auto; }
+  .info-qr { width: 104px; min-height: 104px; }
+  .container { width: min(100% - 24px, 680px); padding-top: 20px; }
   .card { grid-template-columns: 1fr; }
   .qr, .qr-caption { margin-left: auto; margin-right: auto; }
   .button { width: 100%; text-align: center; }

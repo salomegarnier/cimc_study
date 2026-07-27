@@ -8,6 +8,14 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <aside id="infoPanel" class="info-panel" hidden aria-label="Participant information sheet">
+    <a id="infoPanelLink" href="#" target="_blank" rel="noopener">
+      <div id="infoQr" class="info-qr" aria-label="QR code for the participant information sheet"></div>
+      <span>Information sheet</span>
+    </a>
+    <p>Scan to open on your phone</p>
+  </aside>
+
   <main class="container">
     <header class="hero">
       <p class="eyebrow">Study resources</p>
@@ -50,21 +58,6 @@
         </div>
       </article>
 
-      <article class="card">
-        <div class="card-copy">
-          <h2>Participant information sheet</h2>
-          <p>Open or download the information sheet for this study.</p>
-          <a id="infoButton" class="button" href="#" target="_blank" rel="noopener">Open information sheet</a>
-          <details>
-            <summary>Show link</summary>
-            <p id="infoLinkText" class="url"></p>
-          </details>
-        </div>
-        <div>
-          <div id="infoQr" class="qr" aria-label="QR code for the participant information sheet"></div>
-          <p class="qr-caption">Scan to open on another device</p>
-        </div>
-      </article>
     </section>
 
     <footer>
@@ -73,7 +66,7 @@
   </main>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="config.js"></script>
-  <script src="app.js"></script>
+  <script src="config.js?v=5"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>
