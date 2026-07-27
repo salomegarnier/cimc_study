@@ -1,9 +1,9 @@
 window.STUDY_CONFIG = {
   // Kobo web-form URL, without query parameters.
-  surveyBaseUrl: "https://ee.kobotoolbox.org/x/REPLACE_WITH_FORM_ID",
+  surveyBaseUrl: "https://ee.kobotoolbox.org/x/qhhvo3WA",
 
   // Name of the field to prefill in the daily survey.
-  participantFieldName: "participant_id",
+  participantFieldName: "uniqueid",
 
   // Public URL of the participant information sheet (PDF or webpage).
   informationSheetUrl: "https://example.org/participant-information-sheet.pdf",
@@ -14,7 +14,7 @@ window.STUDY_CONFIG = {
     description: "Open your personal daily survey using the link below.",
     startDate: "2026-08-01",
     endDate: "2026-08-14",
-    time: "19:00",
+    time: "9:00",
     durationMinutes: 10,
     reminderMinutesBefore: 10,
     timezone: "Europe/Paris"
