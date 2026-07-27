@@ -108,13 +108,13 @@
       const list = document.createElement("ol");
 
       const dailyItem = document.createElement("li");
-      dailyItem.append("Open the daily form in your browser. ");
+      dailyItem.append("Open the ");
       const dailyLink = document.createElement("a");
       dailyLink.href = dailySurveyUrl;
-      dailyLink.textContent = "Add this";
+      dailyLink.textContent = "daily form";
       dailyLink.target = "_blank";
       dailyLink.rel = "noopener";
-      dailyItem.appendChild(dailyLink);
+      dailyItem.append(dailyLink, " in your browser.");
       list.appendChild(dailyItem);
 
       for (const step of browserSteps) {
@@ -157,9 +157,14 @@
   }
 
   function buildPersonalizedSurveyUrl(baseUrl) {
-    const url = new URL(baseUrl);
-    url.searchParams.set(`d[${config.participantFieldName}]`, participantId);
-    return url.toString();
+    // Kobo expects the prefill parameter in the literal form:
+    // ?d[field_name]=value
+    // Encode only the field name and participant value, while preserving
+    // the square brackets in the query parameter.
+    const separator = baseUrl.includes("?") ? "&" : "?";
+    const fieldName = encodeURIComponent(config.participantFieldName);
+    const value = encodeURIComponent(participantId);
+    return `${baseUrl}${separator}d[${fieldName}]=${value}`;
   }
 
   function buildSurveyUrl() {
